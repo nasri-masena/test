@@ -47,7 +47,7 @@ app.post("/hook", async (req, res) => {
 });
 
 setInterval(() => {
-  axios.get("https://your-render-app.onrender.com/")
+  axios.get("https://azampesa.onrender.com/")
     .then(() => console.log("Self-ping successful"))
     .catch(err => console.error("Self-ping failed:", err.message));
 }, 1000 * 60 * 14);
