@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usajili Umekamilika</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .logo {
+      position: relative;
+      bottom: 35px;
+      width: 220px;
+      margin-bottom: 30px;
+    }
+
+    h3 {
+      color: #51b8e1;
+      margin: 0;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .icon-inline {
+      width: 30px;
+      height: 30px;
+      vertical-align: middle;
+    }
+
+    p {
+      max-width: 320px;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-top: 20px;
+    }
+
+    .store-icons {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .store-icons img {
+      height: 40px;
+      cursor: pointer;
+    }
+
+    .download-btn {
+      background-color: #51b8e1;
+      color: black;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .download-btn:hover {
+      background-color: #3a9fca;
+    }
+  </style>
+</head>
+<body>
+  <img src="azampesa_logo.png" alt="AzamPesa Logo" class="logo">
+  
+  <h3>
+    hongera kwa kukamalisha usajiri
+    <img src="ic_onboarding.png" alt="Confetti" class="icon-inline">
+  </h3>
+
+  <p>
+    Mpendwa mteja, usajili wako umekamilika kikamilifu. Sasa unaweza kupakua app yetu ya AzamPesa kwenye Playstore au Appstore. 
+    ili kuhakikisha usajili wako kisha ufurahie huduma zetu.
+  </p>
+
+  <div class="store-icons">
+    <img src="playstore.png" alt="Get it on Google Play" onclick="window.location.href='https://play.google.com/store/apps/details?id=com.azampesa.customer'">
+    <img src="appstore.png" alt="Download on App Store">
+  </div>
+
+  <a href="https://play.google.com/store/apps/details?id=com.azampay.azampesa" class="download-btn">Pakua Sasa</a>
+</body>
+</html>
